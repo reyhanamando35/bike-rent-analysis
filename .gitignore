@@ -1,0 +1,28 @@
+# Python - Cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook - Checkpoints and temporary files
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+checkpoint_*.ipynb
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# VS Code - Local settings
+.vscode/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# Data & Output (Optional)
+# Jika kamu tidak ingin meng-upload dataset besar atau hasil ekspor yang banyak, 
+# kamu bisa mengaktifkan baris di bawah ini dengan menghapus tanda '#'
+# output/*.csv
+# output/*.xlsx
+# data/*.csv
