@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LightGBM Prediction</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>LightGBM Bike Demand Prediction</h2>
+
+        <form id="predict-form">
+
+            <div class="grid-form">
+                <div>
+                    <label>Temperature</label>
+                    <input name="temp" type="number" step="0.01" required>
+                </div>
+
+                <div>
+                    <label>Feels Like Temp</label>
+                    <input name="atemp" type="number" step="0.01" required>
+                </div>
+
+                <div>
+                    <label>Humidity</label>
+                    <input name="hum" type="number" step="0.01" required>
+                </div>
+
+                <div>
+                    <label>Windspeed</label>
+                    <input name="windspeed" type="number" step="0.01" required>
+                </div>
+
+                <div>
+                    <label>Season</label>
+                    <select name="season">
+                        <option value="1">Spring</option>
+                        <option value="2">Summer</option>
+                        <option value="3">Fall</option>
+                        <option value="4">Winter</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Year</label>
+                    <select name="yr">
+                        <option value="0">2011</option>
+                        <option value="1">2012</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Month</label>
+                    <select name="mnth">
+                        {% for i in range(1,13) %}
+                        <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label>Hour</label>
+                    <select name="hr">
+                        {% for i in range(0,24) %}
+                        <option value="{{ i }}">{{ i }}:00</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label>Weekday</label>
+                    <select name="weekday">
+                        <option value="0">Sunday</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Working Day</label>
+                    <select name="workingday">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Weather</label>
+                    <select name="weathersit">
+                        <option value="1">Clear / Few clouds</option>
+                        <option value="2">Mist / Cloudy</option>
+                        <option value="3">Light rain / Snow</option>
+                        <option value="4">Heavy rain / Snow</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>Holiday</label>
+                    <select name="holiday">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit">Predict</button>
+        </form>
+
+        <div id="result" class="result-box" style="display:none;"></div>
+
+        <a class="back-link" href="/">⬅ Back to Home</a>
+    </div>
+
+    <script>
+        document.getElementById("predict-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            const response = await fetch("/predict/lightgbm", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            const resultBox = document.getElementById("result");
+            resultBox.style.display = "block";
+            resultBox.innerHTML = `
+        <h3>📈 Predicted Bike Rentals</h3>
+        <p>${data.prediction}</p>
+    `;
+        });
+    </script>
+
+</body>
+
+</html>
