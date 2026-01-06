@@ -1,19 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Bike Demand Models</title>
+    <meta charset="UTF-8">
+    <title>Bike Demand Analytics</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
 
-<h1>Bike Demand Prediction Models</h1>
+<div class="container">
+    <h1>Bike Demand Analytics</h1>
 
-<div class="grid">
-    <a class="card" href="/model/lightgbm">LightGBM</a>
-    <a class="card" href="/model/Simple Linear">Simple Linear</a>
-    <a class="card" href="/model/Multiple Linear">Multiple Linear</a>
-    <a class="card" href="/model/KNN">KNN</a>
-    <a class="card highlight" href="/comparison">Model Comparison</a>
+    <div class="grid">
+        <a class="card regression" href="/model/lightgbm">
+            <h2>Regression</h2>
+            <p>Predict bike demand using regression models</p>
+        </a>
+
+        <a class="card forecasting" href="/forecasting">
+            <h2>Forecasting</h2>
+            <p>Time-series forecasting for future demand</p>
+        </a>
+
+        <a class="card clustering" href="/model/clustering">
+            <h2>Clustering</h2>
+            <p>Group usage patterns & rider behavior</p>
+        </a>
+
+        <a class="card classification" href="/model/classification">
+            <h2>Classification</h2>
+            <p>Categorize demand levels & scenarios</p>
+        </a>
+
+        <a class="card eda" href="/model/eda">
+            <h2>EDA</h2>
+            <p>Explore data insights and visualizations</p>
+        </a>
+    </div>
 </div>
 
 </body>

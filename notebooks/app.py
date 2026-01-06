@@ -6,6 +6,9 @@ import pandas as pd
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from fastapi import Form
+import json
+import numpy as np
+import matplotlib.pyplot as plt
 
 app = FastAPI()
 
@@ -15,10 +18,8 @@ artifacts = joblib.load("models_bundle.pkl")
 # Models
 models = {
     "lgbm": artifacts["lgbm"],
-    "simple_linear": artifacts["simple_linear"],
-    "multiple_linear": artifacts["multiple_linear"],
-    "knn": artifacts["knn"]
 }
+forecasting_model = joblib.load("lgbm_forecast.pkl")
 
 # Preprocessing
 numeric_scaler = artifacts["numeric_scaler"]
@@ -42,9 +43,6 @@ def home(request: Request):
         "index.html",
         {"request": request}
     )
-    
-# LightGBM page
-templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/model/lightgbm")
@@ -101,39 +99,169 @@ def predict_lightgbm(
     }
 
 
+# Forecasting Logic
+forecasting_model = joblib.load("lgbm_forecast.pkl")
+MODEL_FEATURES = [
+    "season",
+    "yr",
+    "mnth",
+    "hr",
+    "holiday",
+    "weekday",
+    "workingday",
+    "weathersit",
+    "temp",
+    "atemp",
+    "hum",
+    "windspeed",
+    "day"
+]
 
-# -----------------------
-# Model detail page
-# -----------------------
-@app.get("/model/{model_name}")
-def model_page(request: Request, model_name: str):
+# ---------------- GET PAGE ----------------
+@app.get("/forecasting")
+def forecasting_page(request: Request):
 
-    if model_name not in metrics:
-        return {"error": "Model not found"}
+    with open("static/forecast_metrics.json", "r") as f:
+        metrics = json.load(f)
 
     return templates.TemplateResponse(
-        "model.html",
+        "forecasting.html",
         {
             "request": request,
-            "model_name": model_name,
-            "metrics": metrics[model_name]
+            "metrics": metrics,
+            "feature_importance_img": "/static/feature_importance.png",
+            "evaluation_img": "/static/forecast_evaluation.png",
         }
     )
 
 
-# -----------------------
-# Comparison page
-# -----------------------
-@app.get("/comparison")
-def comparison_page(request: Request):
+def predict_manual(
+    tanggal,
+    jam,
+    suhu,
+    kelembaban,
+    kondisi_cuaca,
+    libur
+):
+    dt = pd.to_datetime(tanggal)
 
-    df = pd.DataFrame(metrics).T.reset_index()
-    df.columns = ["Model", "RMSE", "R2"]
+    # ===== Derived / Random features =====
+    year = 0 if dt.year == 2011 else 1
+    month = dt.month
+    weekday = dt.weekday()
+    day = dt.day
+
+    # Random season (1–4) if not inferred
+    if month in [3, 4, 5]:
+        season = 1
+    elif month in [6, 7, 8]:
+        season = 2
+    elif month in [9, 10, 11]:
+        season = 3
+    else:
+        season = 4
+
+    # Random working day logic
+    workingday = 1 if weekday < 5 and libur == 0 else 0
+
+    # Random / default fillers
+    atemp = suhu + np.random.uniform(-0.05, 0.05)
+    windspeed = np.random.uniform(0.05, 0.5)
+
+    # ===== Assemble full feature row =====
+    row = {
+        "season": season,
+        "yr": year,
+        "mnth": month,
+        "hr": jam,
+        "holiday": libur,
+        "weekday": weekday,
+        "workingday": workingday,
+        "weathersit": kondisi_cuaca,
+        "temp": suhu,
+        "atemp": atemp,
+        "hum": kelembaban,
+        "windspeed": windspeed,
+        "day": day
+    }
+
+    X = pd.DataFrame([[row[col] for col in MODEL_FEATURES]], columns=MODEL_FEATURES)
+
+    prediction = forecasting_model.predict(X)[0]
+    return max(0, int(prediction))
+
+
+def forecast_full_day(
+    target_date,
+    suhu,
+    kelembaban,
+    kondisi_cuaca,
+    libur,
+    output_path
+):
+    hours = list(range(24))
+    forecast_results = []
+
+    for h in hours:
+        p = predict_manual(
+            target_date,
+            h,
+            suhu,
+            kelembaban,
+            kondisi_cuaca,
+            libur
+        )
+        forecast_results.append(p)
+
+    # Plot
+    plt.figure(figsize=(12, 6))
+    plt.bar(hours, forecast_results, alpha=0.6, label="Predicted Count (Bar)")
+    plt.plot(hours, forecast_results, marker="o", linewidth=2, label="Predicted Count (Line)")
+    plt.xlabel("Hour of Day")
+    plt.ylabel("Predicted Number of Rentals")
+    plt.title(f"Bike Rental Forecast – {target_date}")
+    plt.xticks(hours)
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+
+    plt.savefig(output_path)
+    plt.close()
+
+    return hours, forecast_results
+
+
+@app.post("/model/forecasting")
+def run_forecast(
+    request: Request,
+    date: str = Form(...),
+    temp: float = Form(...),
+    humidity: float = Form(...),
+    weather: int = Form(...),
+    holiday: int = Form(...)
+):
+    img_path = "static/user_forecast.png"
+
+    hours, forecast_results = forecast_full_day(
+        target_date=date,
+        suhu=temp,
+        kelembaban=humidity,
+        kondisi_cuaca=weather,
+        libur=holiday,
+        output_path=img_path
+    )
+
+    with open("static/forecast_metrics.json", "r") as f:
+        metrics = json.load(f)
 
     return templates.TemplateResponse(
-        "comparison.html",
+        "forecasting.html",
         {
             "request": request,
-            "table": df.to_dict(orient="records")
+            "metrics": metrics,
+            "feature_importance_img": "/static/feature_importance.png",
+            "evaluation_img": "/static/forecast_evaluation.png",
+            "user_forecast_img": "/static/user_forecast.png",
+            "forecast_values": zip(hours, forecast_results)
         }
     )
