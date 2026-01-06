@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ model_name }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>{{ model_name }} Model</h2>
+
+<ul>
+    <li><strong>RMSE:</strong> {{ metrics.RMSE }}</li>
+    <li><strong>R²:</strong> {{ metrics.R2 }}</li>
+</ul>
+
+<a href="/">⬅ Back to Home</a>
+
+</body>
+</html>

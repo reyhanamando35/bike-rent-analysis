@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Model Comparison</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>Model Comparison</h2>
+
+<table>
+    <tr>
+        <th>Model</th>
+        <th>RMSE</th>
+        <th>R²</th>
+    </tr>
+    {% for row in table %}
+    <tr>
+        <td>{{ row.Model }}</td>
+        <td>{{ row.RMSE }}</td>
+        <td>{{ row.R2 }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/">⬅ Back to Home</a>
+
+</body>
+</html>
