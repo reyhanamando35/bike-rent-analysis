@@ -347,3 +347,35 @@ def run_kmeans_simple(request: Request, k: int = Form(...)):
         }
     )
 
+# Classification
+@app.get("/classification")
+def classification_page(request: Request):
+
+    # --- Load accuracy ---
+    with open("static/hasil_klasifikasi/classification_accuracy.json") as f:
+        accuracy_data = json.load(f)
+
+    # --- Load classification report ---
+    report_df = pd.read_csv("static/hasil_klasifikasi/classification_report.csv")
+
+    return templates.TemplateResponse(
+        "classification.html",
+        {
+            "request": request,
+
+            # Metrics
+            "accuracy": accuracy_data["accuracy_percent"],
+
+            # Table
+            "classification_report": report_df.to_dict(orient="records"),
+
+            # Image
+            "confusion_matrix_img": "static/hasil_klasifikasi/confusion_matrix.png",
+
+            # Report
+            "report_csv": "static/hasil_klasifikasi/classification_report.csv",
+            
+            # Download
+            "result_csv": "/static/hasil_klasifikasi/classification_result.csv"
+        }
+    )
