@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Clustering Analysis</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --muted: #6b7280;
+        }
+
+        body {
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px;
+            color: var(--text);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 2.2rem;
+            color: var(--primary);
+        }
+
+        h2 {
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        .section {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ================= TABLE ================= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        thead {
+            background-color: #f1f5f9;
+        }
+
+        th {
+            padding: 12px;
+            font-size: 0.9rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* ================= IMAGE ================= */
+        .image-container {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ================= GRID ================= */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+        }
+
+        /* ================= FOOTER TEXT ================= */
+        .description {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        /* ================= KMEANS INPUT ================= */
+        .k-form {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .k-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .k-field label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .k-field input {
+            width: 120px;
+            padding: 10px 14px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .k-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .k-help {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .k-btn {
+            padding: 11px 22px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .k-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
+        }
+
+        .k-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Clustering Analysis Dashboard</h1>
+
+    <!-- ================= KMEANS ================= -->
+    <div class="section">
+        <h2>KMeans Silhouette Scores</h2>
+        <p class="description">
+            Evaluation of optimal cluster count using silhouette score.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    {% for key in kmeans_scores[0].keys() %}
+                    <th>{{ key }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in kmeans_scores %}
+                <tr>
+                    {% for value in row.values() %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <hr style="margin:30px 0;">
+
+    <div class="section">
+        <h2>Try KMeans with Custom k</h2>
+
+        <form method="post" action="/clustering/kmeans/simple" class="k-form">
+            <div class="k-field">
+                <label for="k">Number of Clusters (k)</label>
+                <input id="k" type="number" name="k" min="2" max="10" value="{{ k or 3 }}" required>
+                <span class="k-help">Recommended range: 2–10</span>
+            </div>
+
+            <button type="submit" class="k-btn">
+                Run KMeans
+            </button>
+        </form>
+
+        {% if table %}
+        <h4 style="margin-top:28px;">Preview Result (First 10 Rows)</h4>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Hour</th>
+                    <th>Count</th>
+                    <th>Cluster</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in table %}
+                <tr>
+                    <td>{{ row.hr }}</td>
+                    <td>{{ row.cnt }}</td>
+                    <td>{{ row.cluster }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+
+    <!-- ================= CLUSTER SUMMARY ================= -->
+    <div class="section">
+        <h2>Cluster Summary</h2>
+        <p class="description">
+            Mean feature values for each KMeans cluster.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    {% for key in cluster_summary[0].keys() %}
+                    <th>{{ key }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in cluster_summary %}
+                <tr>
+                    {% for value in row.values() %}
+                    <td>{{ value|round(2) }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="image-container">
+            <img src="{{ cluster_scatter_img }}" alt="KMeans Cluster Scatter">
+        </div>
+    </div>
+
+    <!-- ================= DBSCAN ================= -->
+    <div class="section grid">
+        <div>
+            <h2>DBSCAN Cluster Counts</h2>
+            <p class="description">
+                Distribution of clusters detected by DBSCAN (noise = -1).
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        {% for key in dbscan_counts[0].keys() %}
+                        <th>{{ key }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in dbscan_counts %}
+                    <tr>
+                        {% for value in row.values() %}
+                        <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="image-container">
+            <img src="{{ dbscan_scatter_img }}" alt="DBSCAN Scatter">
+        </div>
+    </div>
+
+    <!-- ================= HIERARCHICAL ================= -->
+    <div class="section">
+        <h2>Hierarchical Clustering Dendrogram</h2>
+        <p class="description">
+            Visualization of hierarchical relationships between data points.
+        </p>
+
+        <div class="image-container">
+            <img src="{{ hierarchical_img }}" alt="Hierarchical Dendrogram">
+        </div>
+    </div>
+
+</body>
+
+</html>
