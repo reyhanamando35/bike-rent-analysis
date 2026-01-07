@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification Result</title>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --muted: #6b7280;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px;
+            background: var(--bg);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+        }
+
+        h2, h3 {
+            margin-top: 0;
+        }
+
+        /* ================= CARD ================= */
+        .section {
+            max-width: 1100px;
+            margin: auto;
+            background: var(--card);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .description {
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        /* ================= METRIC ================= */
+        .metric-box {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            padding: 20px 28px;
+            border-radius: 14px;
+            display: inline-block;
+            margin-bottom: 32px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .metric-box h3 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .accuracy {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--success);
+            margin: 6px 0 0;
+        }
+
+        /* ================= IMAGE ================= */
+        .img-responsive {
+            max-width: 100%;
+            border-radius: 14px;
+            margin: 16px 0 32px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ================= TABLE ================= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.95rem;
+        }
+
+        thead {
+            background: #f1f5f9;
+        }
+
+        th {
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--muted);
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        /* ================= BUTTON ================= */
+        .btn-download {
+            display: inline-block;
+            margin-top: 28px;
+            padding: 14px 22px;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 22px rgba(37, 99, 235, 0.35);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="section">
+        <h2>Classification Result</h2>
+        <p class="description">
+            Model performance for bike demand classification.
+        </p>
+
+        <!-- Accuracy -->
+        <div class="metric-box">
+            <h3>Model Accuracy</h3>
+            <p class="accuracy">{{ accuracy }}%</p>
+        </div>
+
+        <!-- Confusion Matrix -->
+        <h3>Confusion Matrix</h3>
+        <img src="{{ confusion_matrix_img }}" class="img-responsive" alt="Confusion Matrix">
+
+        <!-- Classification Report -->
+        <h3>Classification Report</h3>
+        <table>
+            <thead>
+                <tr>
+                    {% for key in classification_report[0].keys() %}
+                    <th>{{ key }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in classification_report %}
+                <tr>
+                    {% for value in row.values() %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Download -->
+        <a href="{{ result_csv }}" class="btn-download">
+            Download Classification Result (CSV)
+        </a>
+    </div>
+
+</body>
+
+</html>
