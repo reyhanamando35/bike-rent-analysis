@@ -9,6 +9,8 @@ from fastapi import Form
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
 app = FastAPI()
 
@@ -265,3 +267,83 @@ def run_forecast(
             "forecast_values": zip(hours, forecast_results)
         }
     )
+
+#Clustering
+@app.get("/clustering")
+def clustering_page(request: Request):
+
+    kmeans_scores = pd.read_csv("static/kmeans_silhouette_results.csv")
+    cluster_summary = pd.read_csv("static/cluster_summary.csv")
+    dbscan_counts = pd.read_csv("static/dbscan_cluster_counts.csv")
+
+    return templates.TemplateResponse(
+        "clustering.html",
+        {
+            "request": request,
+
+            # Tables
+            "kmeans_scores": kmeans_scores.to_dict(orient="records"),
+            "cluster_summary": cluster_summary.to_dict(orient="records"),
+            "dbscan_counts": dbscan_counts.to_dict(orient="records"),
+
+            # Images
+            "cluster_scatter_img": "/static/cluster_scatter.png",
+            "dbscan_scatter_img": "/static/dbscan_scatter.png",
+            "hierarchical_img": "/static/hierarchical_dendrogram.png",
+
+            # 👇 IMPORTANT (for conditional rendering)
+            "k": None,
+            "table": None
+        }
+    )
+
+@app.post("/clustering/kmeans/simple")
+def run_kmeans_simple(request: Request, k: int = Form(...)):
+
+    df = pd.read_csv("static/kmeans_cluster_result.csv")
+    
+    if "cluster" in df.columns:
+        df = df.drop(columns=["cluster"])
+
+    features = ["hr", "cnt"]
+    X = df[features]
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    df["cluster"] = kmeans.fit_predict(X_scaled)
+
+    # ✅ SAVE RESULT PER k
+    labeled_path = f"static/kmeans_cluster_k{k}.csv"
+    df.to_csv(labeled_path, index=False)
+
+    # Preview table
+    table = df[["hr", "cnt", "cluster"]].head(30)
+
+    # Reload static analytics
+    kmeans_scores = pd.read_csv("static/kmeans_silhouette_results.csv")
+    cluster_summary = pd.read_csv("static/cluster_summary.csv")
+    dbscan_counts = pd.read_csv("static/dbscan_cluster_counts.csv")
+
+    return templates.TemplateResponse(
+        "clustering.html",
+        {
+            "request": request,
+
+            "kmeans_scores": kmeans_scores.to_dict(orient="records"),
+            "cluster_summary": cluster_summary.to_dict(orient="records"),
+            "dbscan_counts": dbscan_counts.to_dict(orient="records"),
+
+            "cluster_scatter_img": "/static/cluster_scatter.png",
+            "dbscan_scatter_img": "/static/dbscan_scatter.png",
+            "hierarchical_img": "/static/hierarchical_dendrogram.png",
+
+            "k": k,
+            "table": table.to_dict(orient="records"),
+
+            # ✅ dynamic download link
+            "labeled_csv": f"/{labeled_path}"
+        }
+    )
+
