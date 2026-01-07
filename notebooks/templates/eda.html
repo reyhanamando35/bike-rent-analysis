@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exploratory Data Analysis</title>
+
+    <style>
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            background: #f8fafc;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2563eb;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+        }
+
+        .card h3 {
+            text-align: center;
+            margin-bottom: 14px;
+            font-size: 1.05rem;
+            color: #111827;
+        }
+
+        img {
+            width: 100%;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Exploratory Data Analysis (EDA)</h1>
+
+<div class="grid">
+    {% for img in eda_images %}
+    <div class="card">
+        <h3>{{ img.title }}</h3>
+        <img src="{{ img.file }}" alt="{{ img.title }}">
+    </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
