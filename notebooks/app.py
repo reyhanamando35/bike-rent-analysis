@@ -379,3 +379,74 @@ def classification_page(request: Request):
             "result_csv": "/static/hasil_klasifikasi/classification_result.csv"
         }
     )
+    
+# EDA
+@app.get("/eda")
+def eda_page(request: Request):
+
+    eda_images = [
+        {
+            "title": "Distribusi Penyewaan Sepeda",
+            "file": "static/distribusi_penyewaan.png"
+        },
+        {
+            "title": "Outlier Penyewaan",
+            "file": "static/outlier_penyewaan.png"
+        },
+        {
+            "title": "Pola Jam Penyewaan",
+            "file": "static/pola_jam_penyewaan.png"
+        },
+        {
+            "title": "Pola Kerja vs Libur",
+            "file": "static/pola_kerja_vs_libur.png"
+        },
+        {
+            "title": "Cuaca vs Penyewaan",
+            "file": "static/cuaca_vs_penyewaan.png"
+        },
+        {
+            "title": "Distribusi Cuaca (Klasifikasi)",
+            "file": "static/distribusi_cuaca_klasifikasi.png"
+        },
+        {
+            "title": "Matriks Korelasi",
+            "file": "static/matriks_korelasi.png"
+        },
+        {
+            "title": "Heatmap Regresi",
+            "file": "static/heatmap_regresi.png"
+        },
+        {
+            "title": "Proporsi User",
+            "file": "static/proporsi_user.png"
+        },
+        {
+            "title": "Rata-rata Penyewaan per Musim",
+            "file": "static/rata_rata_musim.png"
+        },
+        {
+            "title": "Segmentasi User (Clustering)",
+            "file": "static/segmentasi_user_clustering.png"
+        },
+        {
+            "title": "Tren Bulanan (Forecasting)",
+            "file": "static/tren_bulanan_forecasting.png"
+        },
+        {
+            "title": "Tren Jam (Forecasting)",
+            "file": "static/tren_jam_forecasting.png"
+        },
+        {
+            "title": "Pola Hari Kerja & Libur",
+            "file": "static/pola_di_kerja_dan_libur.png"
+        },
+    ]
+
+    return templates.TemplateResponse(
+        "eda.html",
+        {
+            "request": request,
+            "eda_images": eda_images
+        }
+    )
